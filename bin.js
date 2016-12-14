@@ -18,6 +18,7 @@ if (argv._[0] === 'install') {
   if (npmArgs.length === 0) {
     yarnArgs.push('install')
     let out$ = spawn('yarn', [...yarnArgs])
+    out$.on('exit', () => { if (!yarnLockExists) fs.unlinkSync('./yarn.lock') })
     out$.stdout.pipe(process.stdout)
     out$.stderr.pipe(process.stderr)
   } else {
