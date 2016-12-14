@@ -1,2 +1,3 @@
 # yrn
-Make `yarn` behave like `npm`.
+
+> Make `yarn` behave like `npm`.

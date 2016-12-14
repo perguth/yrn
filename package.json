@@ -1,0 +1,30 @@
+{
+  "name": "yrn",
+  "version": "1.0.0",
+  "description": "Make `yarn` behave like `npm`.",
+  "bin": "./bin.js",
+  "scripts": {
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pguth/yrn.git"
+  },
+  "keywords": [
+    "npm",
+    "yarn",
+    "mashup"
+  ],
+  "author": "Per Guth <mail@perguth.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pguth/yrn/issues"
+  },
+  "homepage": "https://github.com/pguth/yrn#readme",
+  "dependencies": {
+    "yargs": "^6.5.0"
+  },
+  "devDependencies": {
+    "standard": "^8.6.0"
+  }
+}
