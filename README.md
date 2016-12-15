@@ -25,7 +25,7 @@ Is equivalent to `npm install` but actually calls `yarn install`.
 
 #### `yrn install [pkgName, ...]`
 
-Is equivalent to `npm install [pkgName, ...]` but actually calls `yarn add [pkgName, ...]` and then removes any `package.json` entries that `yarn` made.
+Is equivalent to `npm install [pkgName, ...]` but actually calls `yarn add [pkgName, ...]` and then removes any new `package.json` entries that `yarn` made.
 
 #### `yrn install --save [pkgName, ...]`, `yrn install --save-dev [pkgName, ...]`
 
@@ -33,7 +33,7 @@ Is equivalent to `npm install --save [pkgName, ...]` but actually calls `yarn ad
 
 #### `yrn [cmd] [args]`
 
-Calls `npm [cmd] [args]`
+Calls `npm [cmd] [args]`.
 
 ## License
 
