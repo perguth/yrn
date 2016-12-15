@@ -3,70 +3,57 @@
 const fs = require('fs')
 const spawn = require('child_process').spawn
 const argv = require('yargs').argv
-const originalPkg = require('./package.json')
+const root = require('find-root')(process.cwd())
 
-var yarnLockExists = fs.existsSync('./yarn.lock')
+const pkgPath = root + '/package.json'
+const originalPkg = require(pkgPath)
+const hadYarnFile = fs.existsSync(root + '/yarn.lock')
 
 if (argv._[0] === 'install') {
-  let npmArgs = argv._.slice(1)
+  let pkgNames = argv._.slice(1)
   let yarnArgs = []
+
+  if (argv.save || argv.saveDev) {
+    yarnArgs = ['add']
+  }
+  if (argv.save) pkgNames.push(argv.save)
   if (argv.saveDev) {
-    npmArgs.unshift(argv.saveDev)
-    ;[].push.apply(yarnArgs, ['add', '--dev'])
+    pkgNames.push(argv.saveDev)
+    yarnArgs.push('--dev')
   }
+  if (!pkgNames.length) yarnArgs = ['install']
 
-  if (npmArgs.length === 0) {
-    yarnArgs.push('install')
-    let out$ = spawn('yarn', [...yarnArgs])
-    out$.on('exit', () => { if (!yarnLockExists) fs.unlinkSync('./yarn.lock') })
-    out$.stdout.pipe(process.stdout)
-    out$.stderr.pipe(process.stderr)
-  } else {
-    if (yarnArgs.length === 0) yarnArgs.push('add')
-
-    // synchronously work through all yarn calls:
-    // `npm install a b` => `yarn add a && yarn add b`
-    let yarnCalls = []
-    npmArgs.forEach((pkgName, i) => {
-      if (i === 0) {
-        yarnCalls.push(callYarn.bind(null, pkgName, yarnArgs, () => {}))
-        return
-      }
-      yarnCalls.push(callYarn.bind(null, pkgName, yarnArgs, yarnCalls[i - 1]))
-    })
-    yarnCalls[yarnCalls.length - 1]()
-  }
+  callYarn(yarnArgs, pkgNames)
 } else {
-  // just relay to npm
-  let args = argv._.slice(1)
-  let out$ = spawn('npm', args)
+  let out$ = spawn('npm', process.argv.slice(2))
   out$.stdout.pipe(process.stdout)
   out$.stderr.pipe(process.stderr)
 }
 
-function callYarn (pkgName, yarnArgs, cb) {
-  console.log(`# yarn ${yarnArgs} ${pkgName}`)
-  var out$ = spawn('yarn', [...yarnArgs, pkgName])
-  out$.on('exit', () => {
-    let pkgPath = './package.json'
-    if (!argv.save && !argv.saveDev && fs.existsSync(pkgPath)) {
-      // `yarn add a` adds "a" to the package.json but `npm install a` does not
-      // so let's delete "a" if it's not already there
-      let pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
-      if (!argv.save) {
-        if (!originalPkg.dependencies[pkgName]) {
-          delete pkg.dependencies[pkgName]
-        }
-      }
-      if (!argv.saveDev) {
-        if (!originalPkg.devDependencies) {
-          delete pkg.devDependencies[pkgName]
-        }
-      }
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8')
+function callYarn (yarnArgs, pkgNames) {
+  var out$ = spawn('yarn', [...yarnArgs, ...pkgNames])
+  out$.on('exit', err => {
+    if (err) {
+      console.log(err)
+      process.exit(1)
     }
-    if (!yarnLockExists) fs.unlinkSync('./yarn.lock')
-    cb()
+    if (!argv.save && !argv.saveDev && fs.existsSync(pkgPath)) {
+      // yarn maybe added new dependencies; let's delete them if so:
+      let newPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+      pkgNames.forEach(pkgName => {
+        if (!argv.save && newPkg.dependencies &&
+          !originalPkg.dependencies[pkgName]) {
+          delete newPkg.dependencies[pkgName]
+        }
+        if (!argv.saveDev && newPkg.devDependencies &&
+          !originalPkg.devDependencies[pkgName]) {
+          delete newPkg.devDependencies[pkgName]
+        }
+      })
+      // yarn maybe added a file; let's delete it if so:
+      fs.writeFileSync(pkgPath, JSON.stringify(newPkg, null, 2), 'utf8')
+    }
+    if (!hadYarnFile) fs.unlinkSync(root + '/yarn.lock')
   })
   out$.stdout.pipe(process.stdout)
   out$.stderr.pipe(process.stderr)
