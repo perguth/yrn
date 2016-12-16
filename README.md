@@ -21,7 +21,7 @@ All calls to `yarn` cause it to create a `yarn.lock` next to the `package.json`.
 
 #### `yrn install`
 
-Is equivalent to `npm install` but actually calls `yarn install`.
+Is equivalent to `npm install` but actually calls `yarn install`. It will restore all packages that `yarn` deletes and removes the `node_modules/.yarn-integrity` file if it wasn't there before.
 
 #### `yrn install [pkgName, ...]`
 
