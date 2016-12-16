@@ -15,6 +15,8 @@ const hadYarnIntegrityFile = fs.existsSync(root + '/node_modules/.yarn-integrity
 
 var oldModules = []
 var newModules = []
+var oldSymlinks = []
+var newSymlinks = []
 
 if (argv._[0] === 'install') {
   let yarnArgs = []
@@ -31,6 +33,9 @@ if (argv._[0] === 'install') {
   { let path = root + '/node_modules'
     oldModules = fs.existsSync(path) && getDirectories(path)
   }
+  { let path = root + '/node_modules/.bin'
+    oldSymlinks = fs.existsSync(path) && fs.readdirSync(path)
+  }
 
   callYarn(yarnArgs, pkgNames)
 } else {
@@ -41,6 +46,8 @@ if (argv._[0] === 'install') {
 
 function callYarn (yarnArgs, pkgNames) {
   let modulePath = root + '/node_modules'
+  let symlinkPath = modulePath + '/.bin'
+
   if (oldModules) execSync(`mv ${modulePath} ${root + '/stash-node_modules'}`)
 
   var out$ = spawn('yarn', [...yarnArgs, ...pkgNames])
@@ -65,6 +72,7 @@ function callYarn (yarnArgs, pkgNames) {
     }
 
     if (oldModules) {
+      let plzDelete = false
       newModules = getDirectories(modulePath)
       newModules.forEach(moduleName => {
         let i = oldModules.indexOf(moduleName)
@@ -73,6 +81,10 @@ function callYarn (yarnArgs, pkgNames) {
       oldModules.push(null)
       oldModules.forEach((moduleName, i) => {
         if (!moduleName) {
+          if (!plzDelete) {
+            plzDelete = true
+            return
+          }
           exec(`rm -rf ${root}/stash-node_modules`)
           return
         }
@@ -80,6 +92,28 @@ function callYarn (yarnArgs, pkgNames) {
           if (err) process.exit(err)
         })
       })
+
+      if (oldSymlinks) {
+        newSymlinks = fs.readdirSync(symlinkPath)
+        newSymlinks.forEach(symlinkName => {
+          let i = oldSymlinks.indexOf(symlinkName)
+          if (i !== -1) oldSymlinks.splice(i, 1)
+        })
+        oldSymlinks.push(null)
+        oldSymlinks.forEach((symlinkName, i) => {
+          if (!symlinkName) {
+            if (!plzDelete) {
+              plzDelete = true
+              return
+            }
+            exec(`rm -rf ${root}/stash-node_modules`)
+            return
+          }
+          exec(`mv ${root}/stash-node_modules/.bin/${symlinkName} ${modulePath}/.bin`, {}, err => {
+            if (err) process.exit(err)
+          })
+        })
+      }
     }
 
     if (!hadYarnLockFile) fs.unlink(root + '/yarn.lock')
