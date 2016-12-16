@@ -70,10 +70,14 @@ function callYarn (yarnArgs, pkgNames) {
         let i = oldModules.indexOf(moduleName)
         if (i !== -1) oldModules.splice(i, 1)
       })
+      oldModules.push(null)
       oldModules.forEach((moduleName, i) => {
+        if (!moduleName) {
+          exec(`rm -rf ${root}/stash-node_modules`)
+          return
+        }
         exec(`mv ${root}/stash-node_modules/${moduleName} ${modulePath}`, {}, err => {
           if (err) process.exit(err)
-          if (i === moduleName.length - 1) exec(`rm -rf ${root}/stash-node_modules`)
         })
       })
     }
