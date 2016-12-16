@@ -1,6 +1,6 @@
 {
   "name": "yrn",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Make `yarn` behave like `npm`.",
   "bin": "./bin.js",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/pguth/yrn#readme",
   "dependencies": {
+    "find-root": "^1.0.0",
     "yargs": "^6.5.0"
   },
   "devDependencies": {
