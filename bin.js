@@ -59,17 +59,17 @@ if (argv._[0] === 'install') {
   out$.stderr.pipe(process.stderr)
 }
 
+function getDirectories (dir) {
+  return fs.readdirSync(dir).filter(file => {
+    return fs.statSync(path.join(dir, file)).isDirectory()
+  })
+}
+
 function callYarn (yarnArgs, pkgNames, cb) {
   var out$ = spawn('yarn', [...yarnArgs, ...pkgNames])
   out$.on('exit', cb)
   out$.stdout.pipe(process.stdout)
   out$.stderr.pipe(process.stderr)
-}
-
-function getDirectories (dir) {
-  return fs.readdirSync(dir).filter(file => {
-    return fs.statSync(path.join(dir, file)).isDirectory()
-  })
 }
 
 function removeDependencies (pkgNames) {
@@ -102,19 +102,18 @@ function restorePackagesAndSymlinks (cb) {
 
   parallel({}, calls, null, cb)
 
-  function findLostItems (newNames, oldNames) {
-    newNames.forEach(moduleName => {
-      let i = oldNames.indexOf(moduleName)
-      if (i !== -1) oldNames.splice(i, 1)
-    })
-    return oldNames
-  }
-
   function pushCalls (newItems, oldItems, dir) {
-    let toBeRestored = findLostItems(newItems, oldItems)
+    let toBeRestored = findItemsToRestore(newItems, oldItems)
     let stashedModulesPath = `${root}/stash-node_modules/${dir}`
     toBeRestored.forEach(name => calls.push((arg, cb) => {
       exec('mv ' + stashedModulesPath + name + ' ' + modulePath, {}, cb)
     }))
+  }
+  function findItemsToRestore (newItems, oldItems) {
+    newItems.forEach(moduleName => {
+      let i = oldItems.indexOf(moduleName)
+      if (i !== -1) oldItems.splice(i, 1)
+    })
+    return oldItems
   }
 }
