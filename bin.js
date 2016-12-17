@@ -7,6 +7,7 @@ const execSync = require('child_process').execSync
 const path = require('path')
 const argv = require('yargs').argv
 const root = require('find-root')(process.cwd())
+const fastParallel = require('fastparallel')
 
 const pkgPath = root + '/package.json'
 const originalPkg = require(pkgPath)
@@ -16,9 +17,7 @@ const hadYarnLockFile = fs.existsSync(root + '/yarn.lock')
 var modulePath = root + '/node_modules'
 var symlinkPath = modulePath + '/.bin'
 var oldModules = []
-var newModules = []
 var oldSymlinks = []
-var newSymlinks = []
 
 if (argv._[0] === 'install') {
   let yarnArgs = []
@@ -45,8 +44,15 @@ if (argv._[0] === 'install') {
     if (!argv.save && !argv.saveDev && fs.existsSync(pkgPath)) {
       removeDependencies(pkgNames)
     }
-    restorePackagesAndSymlinks()
-    if (!hadYarnLockFile) fs.unlink(root + '/yarn.lock')
+    restorePackagesAndSymlinks(x => {
+      if (!hadYarnLockFile) {
+        fs.unlink(root + '/yarn.lock')
+      }
+      if (!hadYarnIntegrityFile) {
+        exec(`rm -rf ${root}/node_modules/.yarn-integrity`)
+      }
+      exec(`rm -rf ${root}/stash-node_modules`)
+    })
   })
 } else {
   let out$ = spawn('npm', process.argv.slice(2))
@@ -82,54 +88,34 @@ function removeDependencies (pkgNames) {
   fs.writeFileSync(pkgPath, JSON.stringify(newPkg, null, 2), 'utf8')
 }
 
-function restorePackagesAndSymlinks () {
-  var plzDelete = false
+function restorePackagesAndSymlinks (cb) {
+  var calls = []
+  var parallel = fastParallel({results: false})
 
-  // yarn maybe deleted installed packages; let's restore if so:
   if (oldModules) {
-    newModules = getDirectories(modulePath)
-    newModules.forEach(moduleName => {
-      let i = oldModules.indexOf(moduleName)
-      if (i !== -1) oldModules.splice(i, 1)
-    })
-    oldModules.push(null)
-    oldModules.forEach((moduleName, i) => {
-      if (!moduleName) {
-        if (!plzDelete) {
-          plzDelete = true
-          return
-        }
-        if (!hadYarnIntegrityFile) exec(`rm -rf ${root}/node_modules/.yarn-integrity`)
-        exec(`rm -rf ${root}/stash-node_modules`)
-        return
-      }
-      exec(`mv ${root}/stash-node_modules/${moduleName} ${modulePath}`, {}, err => {
-        if (err) process.exit(err)
-      })
-    })
+    let newModules = getDirectories(modulePath)
+    pushCalls(newModules, oldModules, './')
+  }
+  if (oldSymlinks) {
+    let newSymlinks = fs.readdirSync(symlinkPath)
+    pushCalls(newSymlinks, oldSymlinks, '.bin/')
   }
 
-  // yarn maybe deleted `node_modules/.bin/` symlinks; let's restore if so:
-  if (oldSymlinks) {
-    newSymlinks = fs.readdirSync(symlinkPath)
-    newSymlinks.forEach(symlinkName => {
-      let i = oldSymlinks.indexOf(symlinkName)
-      if (i !== -1) oldSymlinks.splice(i, 1)
+  parallel({}, calls, null, cb)
+
+  function findLostItems (newNames, oldNames) {
+    newNames.forEach(moduleName => {
+      let i = oldNames.indexOf(moduleName)
+      if (i !== -1) oldNames.splice(i, 1)
     })
-    oldSymlinks.push(null)
-    oldSymlinks.forEach((symlinkName, i) => {
-      if (!symlinkName) {
-        if (!plzDelete) {
-          plzDelete = true
-          return
-        }
-        if (!hadYarnIntegrityFile) exec(`rm -rf ${root}/node_modules/.yarn-integrity`)
-        exec(`rm -rf ${root}/stash-node_modules`)
-        return
-      }
-      exec(`mv ${root}/stash-node_modules/.bin/${symlinkName} ${modulePath}/.bin`, {}, err => {
-        if (err) process.exit(err)
-      })
-    })
+    return oldNames
+  }
+
+  function pushCalls (newItems, oldItems, dir) {
+    let toBeRestored = findLostItems(newItems, oldItems)
+    let stashedModulesPath = `${root}/stash-node_modules/${dir}`
+    toBeRestored.forEach(name => calls.push((arg, cb) => {
+      exec('mv ' + stashedModulesPath + name + ' ' + modulePath, {}, cb)
+    }))
   }
 }

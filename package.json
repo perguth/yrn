@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/pguth/yrn#readme",
   "dependencies": {
+    "fastparallel": "^2.3.0",
     "find-root": "^1.0.0",
     "yargs": "^6.5.0"
   },
