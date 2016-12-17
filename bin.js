@@ -39,8 +39,7 @@ if (argv._[0] === 'install') {
 
   if (oldModules) execSync(`mv ${modulePath} ${root + '/stash-node_modules'}`)
 
-  callYarn(yarnArgs, pkgNames, err => {
-    if (err) process.exit(err)
+  callYarn(yarnArgs, pkgNames, x => {
     if (!argv.save && !argv.saveDev && fs.existsSync(pkgPath)) {
       removeDependencies(pkgNames)
     }
@@ -62,7 +61,7 @@ if (argv._[0] === 'install') {
 
 function callYarn (yarnArgs, pkgNames, cb) {
   var out$ = spawn('yarn', [...yarnArgs, ...pkgNames])
-  out$.on('exit', err => cb(err))
+  out$.on('exit', cb)
   out$.stdout.pipe(process.stdout)
   out$.stderr.pipe(process.stderr)
 }
