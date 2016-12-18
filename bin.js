@@ -28,7 +28,7 @@ if (argv._[0] === 'install') {
     yarnArgs.push('--dev')
     pkgNames.push(argv.saveDev)
   }
-  if (yarnArgs) yarnArgs.unshift('add')
+  if (pkgNames.length > 0) yarnArgs.unshift('add')
   else yarnArgs = ['install']
 
   { let path = root + '/node_modules'
