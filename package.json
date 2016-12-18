@@ -1,6 +1,6 @@
 {
   "name": "yrn",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Make `yarn` behave like `npm`.",
   "bin": "./bin.js",
   "scripts": {
