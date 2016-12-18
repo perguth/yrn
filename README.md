@@ -2,7 +2,8 @@
 
 > Make [`yarn`](https://yarnpkg.com/en/docs/cli/) behave like [`npm`](https://docs.npmjs.com/cli/npm).
 
-```
+```bash
+npm install -g yarn npm # `yrn` needs to have `yarn` and `npm` around
 npm install -g yrn
 ```
 
