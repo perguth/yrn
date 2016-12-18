@@ -4,7 +4,7 @@
   "description": "Make `yarn` behave like `npm`.",
   "bin": "./bin.js",
   "scripts": {
-    "test": "standard"
+    "test": "standard && tape test.js"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,8 @@
     "yargs": "^6.5.0"
   },
   "devDependencies": {
+    "flip-tape": "^4.0.6",
+    "jsonfile": "^2.4.0",
     "standard": "^8.6.0"
   }
 }
