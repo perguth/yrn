@@ -75,13 +75,15 @@ function callYarn (yarnArgs, pkgNames, cb) {
 function removeDependencies (pkgNames) {
   let newPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
   pkgNames.forEach(pkgName => {
-    if (!argv.save && newPkg.dependencies &&
-      !originalPkg.dependencies[pkgName]) {
-      delete newPkg.dependencies[pkgName]
+    if (!argv.save) {
+      if (originalPkg.dependencies && !originalPkg.dependencies[pkgName]) {
+        delete newPkg.dependencies[pkgName]
+      }
     }
-    if (!argv.saveDev && newPkg.devDependencies &&
-      !originalPkg.devDependencies[pkgName]) {
-      delete newPkg.devDependencies[pkgName]
+    if (!argv.saveDev) {
+      if (originalPkg.devDependencies && !originalPkg.devDependencies[pkgName]) {
+        delete newPkg.devDependencies[pkgName]
+      }
     }
   })
   fs.writeFileSync(pkgPath, JSON.stringify(newPkg, null, 2), 'utf8')
