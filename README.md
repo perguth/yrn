@@ -16,7 +16,7 @@ yrn install --save-dev standard tape # uses `yarn` to install
 yrn uninstall --save-dev tape # uses `npm` to uninstall
 ```
 
-## API
+## CLI
 
 All calls to `yarn` cause it to create a `yarn.lock` and a `node_modules/.yarn-integrity`. We delete them automatically afterwards if they weren't there before.
 
