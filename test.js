@@ -28,6 +28,7 @@ var testPkgDirNpm
     getDirectories(testDirYrn + '/node_modules'),
     getDirectories(testDirNpm + '/node_modules')
   )
+  removeDirs()
 })
 
 'Behaves like NPM regarding `package.json`'.test(t => {
