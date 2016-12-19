@@ -3,11 +3,41 @@ const test = require('flip-tape') // eslint-disable-line
 const jsonFile = require('jsonfile')
 const execSync = require('child_process').execSync
 const path = require('path')
+const parallel = require('run-parallel')
 
 var testDirYrn
 var testPkgDirYrn
 var testDirNpm
 var testPkgDirNpm
+
+'`yrn` is faster than NPM'.test(t => {
+  t.plan(1)
+  prepareDirs()
+
+  let start
+  let totalYrn
+  let totalNpm
+
+  parallel([done => {
+    start = new Date().getTime()
+    run(['yrn'], 'install choo webtorrent')
+    run(['yrn'], 'install tape standard')
+    run(['yrn'], 'install signalhub webrtc-swarm')
+    totalYrn = new Date().getTime() - start
+    done()
+  }, done => {
+    start = new Date().getTime()
+    run(['npm'], 'install choo webtorrent')
+    run(['npm'], 'install tape standard')
+    run(['npm'], 'install signalhub webrtc-swarm')
+    totalNpm = new Date().getTime() - start
+    done()
+  }], x => {
+    t.ok(totalYrn < totalNpm, 'installing 6 pkgs over 3 runs')
+    t.comment('`yrn` runs: ' + totalYrn + 'ms; NPM runs: ' + totalNpm + 'ms')
+    removeDirs()
+  })
+})
 
 'Installs saved dependencies like NPM'.test(t => {
   t.plan(1)

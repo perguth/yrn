@@ -29,6 +29,7 @@
   "devDependencies": {
     "flip-tape": "^4.0.7",
     "jsonfile": "^2.4.0",
+    "run-parallel": "^1.1.6",
     "standard": "^8.6.0"
   }
 }
