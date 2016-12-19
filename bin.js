@@ -41,7 +41,7 @@ if (argv._[0] === 'install') {
   if (oldModules) execSync(`mv ${modulePath} ${root + '/stash-node_modules'}`)
 
   callYarn(yarnArgs, pkgNames, x => {
-    if (!argv.save && !argv.saveDev && fs.existsSync(pkgPath)) {
+    if (!argv.save && !argv.saveDev) {
       removeDependencies(pkgNames)
     }
     restorePackagesAndSymlinks(x => {
@@ -74,7 +74,9 @@ function callYarn (yarnArgs, pkgNames, cb) {
 }
 
 function removeDependencies (pkgNames) {
+  if (!fs.existsSync(pkgPath)) return
   let newPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+
   pkgNames.forEach(pkgName => {
     if (!argv.save) {
       if (originalPkg.dependencies && !originalPkg.dependencies[pkgName]) {
