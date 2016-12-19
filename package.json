@@ -27,7 +27,7 @@
     "yargs": "^6.5.0"
   },
   "devDependencies": {
-    "flip-tape": "^4.0.6",
+    "flip-tape": "^4.0.7",
     "jsonfile": "^2.4.0",
     "standard": "^8.6.0"
   }

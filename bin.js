@@ -7,7 +7,7 @@ const execSync = require('child_process').execSync
 const path = require('path')
 const argv = require('yargs').argv
 const root = require('find-root')(process.cwd())
-const fastParallel = require('fastparallel')
+const parallel = require('run-parallel')
 
 const pkgPath = root + '/package.json'
 const originalPkg = require(pkgPath)
@@ -23,13 +23,14 @@ if (argv._[0] === 'install') {
   let yarnArgs = []
   let pkgNames = argv._.slice(1)
 
-  if (argv.save) pkgNames.push(argv.save)
-  if (argv.saveDev) {
-    yarnArgs.push('--dev')
-    pkgNames.push(argv.saveDev)
+  if (argv.save) {
+    pkgNames = [...pkgNames, argv.save]
   }
-  if (pkgNames.length > 0) yarnArgs.unshift('add')
-  else yarnArgs = ['install']
+  if (argv.saveDev) {
+    yarnArgs = ['--dev']
+    pkgNames = [...pkgNames, argv.saveDev]
+  }
+  yarnArgs = yarnArgs ? ['add', ...yarnArgs] : ['install']
 
   { let path = root + '/node_modules'
     oldModules = fs.existsSync(path) && getDirectories(path)
@@ -91,7 +92,6 @@ function removeDependencies (pkgNames) {
 
 function restorePackagesAndSymlinks (cb) {
   var calls = []
-  var parallel = fastParallel({results: false})
 
   if (oldModules) {
     let newModules = getDirectories(modulePath)
@@ -102,7 +102,7 @@ function restorePackagesAndSymlinks (cb) {
     pushCalls(newSymlinks, oldSymlinks, '.bin/')
   }
 
-  parallel({}, calls, null, cb)
+  parallel(calls, cb)
 
   function pushCalls (newItems, oldItems, dir) {
     let toBeRestored = findItemsToRestore(newItems, oldItems)
