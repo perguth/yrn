@@ -9,59 +9,69 @@ var testPkgDirYrn
 var testDirNpm
 var testPkgDirNpm
 
-function prepareDirs () {
-  testDirYrn = fs.mkdtempSync('./test-')
-  testPkgDirYrn = testDirYrn + '/package.json'
-  testDirNpm = fs.mkdtempSync('./test-')
-  testPkgDirNpm = testDirNpm + '/package.json'
-  let testPkg = { license: 'MIT', description: '-', repository: '-' }
+'Installs saved dependencies like NPM'.test(t => {
+  t.plan(1)
+  prepareDirs()
+  let testPkg = {
+    license: 'MIT',
+    description: '-',
+    repository: '-',
+    dependencies: { tape: '4.x' },
+    devDependencies: { standard: '8.x' }
+  }
   jsonFile.writeFileSync(testPkgDirYrn, testPkg)
   jsonFile.writeFileSync(testPkgDirNpm, testPkg)
-}
-function removeDirs () {
-  execSync('rm -rf ' + testDirYrn)
-  execSync('rm -rf ' + testDirNpm)
-}
 
-'Changes to `package.json`'.test(t => {
+  run(['yrn', 'npm'], 'install')
+
+  '`yrn install`'.deepEqual(
+    getDirectories(testDirYrn + '/node_modules'),
+    getDirectories(testDirNpm + '/node_modules')
+  )
+})
+
+'Behaves like NPM regarding `package.json`'.test(t => {
   t.plan(5)
   prepareDirs()
 
   '`yrn` runs'.doesNotThrow(x => execSync('./bin.js help'))
 
-  { let newPgks = run('install --save-dev')
+  { let newPgks = run(['yrn'], 'install --save-dev tape')
     'devDependency was added'.ok(newPgks[0].devDependencies.tape)
   }
 
-  { let newPgks = run('uninstall --save-dev')
+  { let newPgks = run(['yrn'], 'uninstall --save-dev tape')
     'devDependency was removed'.notOk(newPgks[0].devDependencies.tape)
   }
 
-  { let newPgks = run('install --save')
+  { let newPgks = run(['yrn'], 'install --save tape')
     'dependency was added'.ok(newPgks[0].dependencies.tape)
   }
 
-  { let newPgks = run('uninstall --save')
+  { let newPgks = run(['yrn'], 'uninstall --save tape')
     'dependency was removed'.notOk(newPgks[0].dependencies.tape)
   }
   removeDirs()
 })
 
-'Changes to `node_modules` and `yarn` files'.test(t => {
-  t.plan(4)
+'Behaves like NPM regarding `node_modules` and Yarns files'.test(t => {
+  t.plan(3)
   prepareDirs()
-  run('install', 'tape', true)
-  run('install', 'standard', true)
+  run(['yrn', 'npm'], 'install tape')
+  run(['yrn', 'npm'], 'install standard')
 
   'previous packages got restored'.deepEqual(
     getDirectories(testDirYrn + '/node_modules'),
     getDirectories(testDirNpm + '/node_modules')
   )
 
+  // yarn and npm create .bin content differently
+  /*
   'previous symlinks got restored'.deepEqual(
     fs.readdirSync(testDirYrn + '/node_modules/.bin'),
     fs.readdirSync(testDirNpm + '/node_modules/.bin')
   )
+  */
 
   '`yarn.lock` got removed'.notOk(
     fs.existsSync(testDirYrn + '/yarn.lock')
@@ -74,12 +84,29 @@ function removeDirs () {
   removeDirs()
 })
 
-function run (cmd, pkgs, runNpm) {
-  pkgs = pkgs || 'tape'
-  if (runNpm) execSync('cd ' + testDirNpm + ' && ' + './../bin.js ' + cmd + ' tape')
-  execSync('cd ' + testDirYrn + ' && ' + './../bin.js ' + cmd + ' tape')
+function prepareDirs () {
+  testDirYrn = fs.mkdtempSync('./test-')
+  testPkgDirYrn = testDirYrn + '/package.json'
+  testDirNpm = fs.mkdtempSync('./test-')
+  testPkgDirNpm = testDirNpm + '/package.json'
+  let testPkg = { license: 'MIT', description: '-', repository: '-' }
+  jsonFile.writeFileSync(testPkgDirYrn, testPkg)
+  jsonFile.writeFileSync(testPkgDirNpm, testPkg)
+}
+
+function removeDirs () {
+  execSync('rm -rf ' + testDirYrn)
+  execSync('rm -rf ' + testDirNpm)
+}
+
+function run (bin, cmd) {
+  var runYrn = bin.includes('yrn')
+  var runNpm = bin.includes('npm')
+  if (runYrn) execSync('cd ' + testDirYrn + ' && ' + './../bin.js ' + cmd)
+  if (runNpm) execSync('cd ' + testDirNpm + ' && ' + 'npm ' + cmd)
+
   return [
-    jsonFile.readFileSync(testPkgDirYrn),
+    runYrn ? jsonFile.readFileSync(testPkgDirYrn) : null,
     runNpm ? jsonFile.readFileSync(testPkgDirNpm) : null
   ]
 }

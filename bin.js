@@ -30,7 +30,7 @@ if (argv._[0] === 'install') {
     yarnArgs = ['--dev']
     pkgNames = [...pkgNames, argv.saveDev]
   }
-  yarnArgs = yarnArgs ? ['add', ...yarnArgs] : ['install']
+  yarnArgs = pkgNames.length > 0 ? ['add', ...yarnArgs] : ['install']
 
   { let path = root + '/node_modules'
     oldModules = fs.existsSync(path) && getDirectories(path)
