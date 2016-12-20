@@ -1,6 +1,6 @@
 # yrn
 
-> Make [`yarn`](https://yarnpkg.com/en/docs/cli/) behave like [`npm`](https://docs.npmjs.com/cli/npm).
+> A package manager that behaves like [`npm`](https://docs.npmjs.com/cli/npm) but uses the faster [`yarn`](https://yarnpkg.com/en/docs/cli/).
 
 ```bash
 npm install -g yarn npm # `yrn` needs to have `yarn` and `npm` around

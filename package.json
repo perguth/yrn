@@ -1,7 +1,7 @@
 {
   "name": "yrn",
   "version": "1.0.13",
-  "description": "Make `yarn` behave like `npm`.",
+  "description": "A package manager that behaves like NPM but uses the faster Yarn.",
   "bin": "./bin.js",
   "scripts": {
     "test": "standard && tape test.js"
