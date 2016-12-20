@@ -8,6 +8,7 @@ const path = require('path')
 const argv = require('yargs').argv
 const root = require('find-root')(process.cwd())
 const parallel = require('run-parallel')
+const jsonFile = require('jsonfile')
 
 const pkgPath = root + '/package.json'
 const originalPkg = require(pkgPath)
@@ -75,7 +76,7 @@ function callYarn (yarnArgs, pkgNames, cb) {
 
 function removeDependencies (pkgNames) {
   if (!fs.existsSync(pkgPath)) return
-  let newPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+  let newPkg = jsonFile.readFileSync(pkgPath)
 
   pkgNames.forEach(pkgName => {
     if (!argv.save) {
@@ -89,7 +90,7 @@ function removeDependencies (pkgNames) {
       }
     }
   })
-  fs.writeFileSync(pkgPath, JSON.stringify(newPkg, null, 2), 'utf8')
+  jsonFile.writeFileSync(pkgPath, newPkg, {spaces: 2})
 }
 
 function restorePackagesAndSymlinks (cb) {
@@ -109,8 +110,8 @@ function restorePackagesAndSymlinks (cb) {
   function pushCalls (newItems, oldItems, dir) {
     let toBeRestored = findItemsToRestore(newItems, oldItems)
     let stashedModulesPath = `${root}/stash-node_modules/${dir}`
-    toBeRestored.forEach(name => calls.push((arg, cb) => {
-      exec('mv ' + stashedModulesPath + name + ' ' + modulePath, {}, cb)
+    toBeRestored.forEach(name => calls.push(done => {
+      exec('mv ' + stashedModulesPath + name + ' ' + modulePath, {}, done)
     }))
   }
   function findItemsToRestore (newItems, oldItems) {
