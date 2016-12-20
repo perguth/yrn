@@ -6,60 +6,9 @@ const path = require('path')
 const parallel = require('run-parallel')
 
 var testDirYrn
-var testPkgDirYrn
+var testPkgPathYrn
 var testDirNpm
-var testPkgDirNpm
-
-'`yrn` is faster than NPM'.test(t => {
-  t.plan(1)
-  prepareDirs()
-
-  let start
-  let totalYrn
-  let totalNpm
-
-  parallel([done => {
-    start = new Date().getTime()
-    run(['yrn'], 'install choo webtorrent')
-    run(['yrn'], 'install tape standard')
-    run(['yrn'], 'install signalhub webrtc-swarm')
-    totalYrn = new Date().getTime() - start
-    done()
-  }, done => {
-    start = new Date().getTime()
-    run(['npm'], 'install choo webtorrent')
-    run(['npm'], 'install tape standard')
-    run(['npm'], 'install signalhub webrtc-swarm')
-    totalNpm = new Date().getTime() - start
-    done()
-  }], x => {
-    t.ok(totalYrn < totalNpm, 'installing 6 pkgs over 3 runs')
-    t.comment('`yrn` runs: ' + totalYrn + 'ms; NPM runs: ' + totalNpm + 'ms')
-    removeDirs()
-  })
-})
-
-'Installs saved dependencies like NPM'.test(t => {
-  t.plan(1)
-  prepareDirs()
-  let testPkg = {
-    license: 'MIT',
-    description: '-',
-    repository: '-',
-    dependencies: { tape: '4.x' },
-    devDependencies: { standard: '8.x' }
-  }
-  jsonFile.writeFileSync(testPkgDirYrn, testPkg)
-  jsonFile.writeFileSync(testPkgDirNpm, testPkg)
-
-  run(['yrn', 'npm'], 'install')
-
-  '`yrn install`'.deepEqual(
-    getDirectories(testDirYrn + '/node_modules'),
-    getDirectories(testDirNpm + '/node_modules')
-  )
-  removeDirs()
-})
+var testPkgPathNpm
 
 'Behaves like NPM regarding `package.json`'.test(t => {
   t.plan(5)
@@ -67,20 +16,24 @@ var testPkgDirNpm
 
   '`yrn` runs'.doesNotThrow(x => execSync('./bin.js help'))
 
-  { let newPgks = run(['yrn'], 'install --save-dev tape')
-    'devDependency was added'.ok(newPgks[0].devDependencies.tape)
+  run(['yrn'], 'install --save-dev tape')
+  { let newPkg = readPkg(testPkgPathYrn)
+    'devDependency was added'.ok(newPkg.devDependencies.tape)
   }
 
-  { let newPgks = run(['yrn'], 'uninstall --save-dev tape')
-    'devDependency was removed'.notOk(newPgks[0].devDependencies.tape)
+  run(['yrn'], 'uninstall --save-dev tape')
+  { let newPkg = readPkg(testPkgPathYrn)
+    'devDependency was removed'.notOk(newPkg.devDependencies.tape)
   }
 
-  { let newPgks = run(['yrn'], 'install --save tape')
-    'dependency was added'.ok(newPgks[0].dependencies.tape)
+  run(['yrn'], 'install --save tape')
+  { let newPgks = readPkg(testPkgPathYrn)
+    'dependency was added'.ok(newPgks.dependencies.tape)
   }
 
-  { let newPgks = run(['yrn'], 'uninstall --save tape')
-    'dependency was removed'.notOk(newPgks[0].dependencies.tape)
+  run(['yrn'], 'uninstall --save tape')
+  { let newPgks = readPkg(testPkgPathYrn)
+    'dependency was removed'.notOk(newPgks.dependencies.tape)
   }
   removeDirs()
 })
@@ -115,14 +68,65 @@ var testPkgDirNpm
   removeDirs()
 })
 
+'Installs saved dependencies like NPM'.test(t => {
+  t.plan(1)
+  prepareDirs()
+  let testPkg = {
+    license: 'MIT',
+    description: '-',
+    repository: '-',
+    dependencies: { tape: '4.x' },
+    devDependencies: { standard: '8.x' }
+  }
+  jsonFile.writeFileSync(testPkgPathYrn, testPkg)
+  jsonFile.writeFileSync(testPkgPathNpm, testPkg)
+
+  run(['yrn', 'npm'], 'install')
+
+  '`yrn install`'.deepEqual(
+    getDirectories(testDirYrn + '/node_modules'),
+    getDirectories(testDirNpm + '/node_modules')
+  )
+  removeDirs()
+})
+
+'`yrn` is faster than NPM'.test(t => {
+  t.plan(1)
+  prepareDirs()
+
+  let start
+  let totalYrn
+  let totalNpm
+
+  parallel([done => {
+    start = new Date().getTime()
+    run(['yrn'], 'install choo webtorrent')
+    run(['yrn'], 'install tape standard')
+    run(['yrn'], 'install signalhub webrtc-swarm')
+    totalYrn = new Date().getTime() - start
+    done()
+  }, done => {
+    start = new Date().getTime()
+    run(['npm'], 'install choo webtorrent')
+    run(['npm'], 'install tape standard')
+    run(['npm'], 'install signalhub webrtc-swarm')
+    totalNpm = new Date().getTime() - start
+    done()
+  }], x => {
+    t.ok(totalYrn < totalNpm, 'installing 6 pkgs over 3 runs')
+    t.comment('`yrn` runs: ' + totalYrn + 'ms; NPM runs: ' + totalNpm + 'ms')
+    removeDirs()
+  })
+})
+
 function prepareDirs () {
   testDirYrn = fs.mkdtempSync('./test-')
-  testPkgDirYrn = testDirYrn + '/package.json'
+  testPkgPathYrn = testDirYrn + '/package.json'
   testDirNpm = fs.mkdtempSync('./test-')
-  testPkgDirNpm = testDirNpm + '/package.json'
+  testPkgPathNpm = testDirNpm + '/package.json'
   let testPkg = { license: 'MIT', description: '-', repository: '-' }
-  jsonFile.writeFileSync(testPkgDirYrn, testPkg)
-  jsonFile.writeFileSync(testPkgDirNpm, testPkg)
+  jsonFile.writeFileSync(testPkgPathYrn, testPkg)
+  jsonFile.writeFileSync(testPkgPathNpm, testPkg)
 }
 
 function removeDirs () {
@@ -135,11 +139,12 @@ function run (bin, cmd) {
   var runNpm = bin.includes('npm')
   if (runYrn) execSync('cd ' + testDirYrn + ' && ' + './../bin.js ' + cmd)
   if (runNpm) execSync('cd ' + testDirNpm + ' && ' + 'npm ' + cmd)
+}
 
-  return [
-    runYrn ? jsonFile.readFileSync(testPkgDirYrn) : null,
-    runNpm ? jsonFile.readFileSync(testPkgDirNpm) : null
-  ]
+function readPkg (path, raw) {
+  return raw
+    ? fs.readFileSync(path, {encoding: 'utf8'})
+    : jsonFile.readFileSync(path)
 }
 
 function getDirectories (dir) {
