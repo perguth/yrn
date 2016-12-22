@@ -20,7 +20,7 @@ var symlinkPath = modulePath + '/.bin'
 var oldModules = []
 var oldSymlinks = []
 
-if (argv._[0] === 'install') {
+if (argv._[0] === 'install' && !argv.g) {
   let yarnArgs = []
   let pkgNames = argv._.slice(1)
 
