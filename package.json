@@ -29,6 +29,6 @@
   },
   "devDependencies": {
     "flip-tape": "^4.0.7",
-    "standard": "^8.6.0"
+    "standard": "^9.0.2"
   }
 }
