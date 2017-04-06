@@ -7,7 +7,9 @@ npm install -g yarn # yrn relies on `yarn` for actual pkg management
 npm install -g yrn
 ```
 
-**`yrn`** takes all `install` calls and forwards them to `yarn`. All other calls will be forwarded to `npm`. It will remove the `yarn.lock` file as well as the added dependencies. It will restore the deleted files in`node_packages` and gets rid of `node_modules/.yarn-integrity`. Exception: previously existing `yarn` files will be kept.
+**`yrn`** takes all `install` calls and forwards them to `yarn`. All other calls will be forwarded to `npm`.
+
+> **In depth:**  It will remove the `yarn.lock` file as well as the added dependencies.It will restore the deleted files in`node_packages` and gets rid of `node_modules/.yarn-integrity`. Exception: previously existing `yarn` files will be kept.
 
 ## Usage
 
