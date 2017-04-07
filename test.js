@@ -75,8 +75,8 @@ var testPkgPathNpm
     license: 'MIT',
     description: '-',
     repository: '-',
-    dependencies: { tape: '4.x' },
-    devDependencies: { standard: '8.x' }
+    dependencies: { tape: '*' },
+    devDependencies: { standard: '*' }
   }
   jsonFile.writeFileSync(testPkgPathYrn, testPkg)
   jsonFile.writeFileSync(testPkgPathNpm, testPkg)
