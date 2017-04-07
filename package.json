@@ -11,9 +11,7 @@
     "url": "git+https://github.com/pguth/yrn.git"
   },
   "keywords": [
-    "npm",
-    "yarn",
-    "mashup"
+    "npm", "yarn", "install", "modules", "package manager", "package.json"
   ],
   "author": "Per Guth <mail@perguth.de>",
   "license": "MIT",
@@ -26,6 +24,9 @@
     "jsonfile": "^2.4.0",
     "run-parallel": "^1.1.6",
     "yargs": "^7.0.1"
+  },
+  "peerDependencies": {
+    "yarn": "*"
   },
   "devDependencies": {
     "flip-tape": "^4.0.7",
