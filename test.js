@@ -113,8 +113,7 @@ var testPkgPathNpm
     totalNpm = new Date().getTime() - start
     done()
   }], x => {
-    t.ok(totalYrn < totalNpm, 'installing 6 pkgs over 3 runs')
-    t.comment('`yrn` runs: ' + totalYrn + 'ms; NPM runs: ' + totalNpm + 'ms')
+    `yrn is >2x faster than NPM`.ok(totalNpm * 2 > totalYrn)
     removeDirs()
   })
 })
