@@ -21,6 +21,10 @@ var oldModules = []
 var oldSymlinks = []
 
 if (argv._[0] === 'install' && !argv.g) {
+  prepareArgsAndCallYarn()
+} else callNpm()
+
+function prepareArgsAndCallYarn () {
   let yarnArgs = []
   let pkgNames = argv._.slice(1)
 
@@ -39,9 +43,11 @@ if (argv._[0] === 'install' && !argv.g) {
     oldSymlinks = fs.existsSync(path) && fs.readdirSync(path)
   }
 
-  if (oldModules) execSync(`mv ${modulePath} ${root + '/stash-node_modules'}`)
+  if (oldModules) execSync(`mv ${modulePath} ${root}/stash-node_modules'`)
 
-  callYarn(yarnArgs, pkgNames, x => {
+  callYarn(yarnArgs, pkgNames, removePackages)
+
+  function removePackages () {
     if (!argv.save && !argv.saveDev) {
       removeDependencies(pkgNames)
     }
@@ -54,17 +60,19 @@ if (argv._[0] === 'install' && !argv.g) {
       }
       exec(`rm -rf ${root}/stash-node_modules`)
     })
-  })
-} else {
-  let out$ = spawn('npm', process.argv.slice(2))
-  out$.stdout.pipe(process.stdout)
-  out$.stderr.pipe(process.stderr)
+  }
 }
 
 function getDirectories (dir) {
   return fs.readdirSync(dir).filter(file => {
     return fs.statSync(path.join(dir, file)).isDirectory()
   })
+}
+
+function callNpm () {
+  let out$ = spawn('npm', process.argv.slice(2))
+  out$.stdout.pipe(process.stdout)
+  out$.stderr.pipe(process.stderr)
 }
 
 function callYarn (yarnArgs, pkgNames, cb) {
