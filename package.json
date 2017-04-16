@@ -1,17 +1,23 @@
 {
   "name": "yrn",
-  "version": "1.1.1",
+  "version": "1.1.4",
   "description": "A package manager that behaves like NPM but uses the faster Yarn.",
   "bin": "./bin.js",
   "scripts": {
-    "test": "standard && tape test.js"
+    "test": "standard && tape test.js",
+    "install": "babel index.js --out-file bin.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pguth/yrn.git"
   },
   "keywords": [
-    "npm", "yarn", "install", "modules", "package manager", "package.json"
+    "npm",
+    "yarn",
+    "install",
+    "modules",
+    "package manager",
+    "package.json"
   ],
   "author": "Per Guth <mail@perguth.de>",
   "license": "MIT",
@@ -20,6 +26,8 @@
   },
   "homepage": "https://github.com/pguth/yrn#readme",
   "dependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
     "find-root": "^1.0.0",
     "jsonfile": "^2.4.0",
     "run-parallel": "^1.1.6",
