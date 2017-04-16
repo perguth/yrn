@@ -5,7 +5,7 @@
   "bin": "./bin.js",
   "scripts": {
     "test": "standard && tape test.js",
-    "install": "babel index.js --out-file bin.js"
+    "prepublish": "babel index.js --out-file bin.js"
   },
   "repository": {
     "type": "git",
