@@ -1,6 +1,6 @@
 {
   "name": "yrn",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A package manager that behaves like NPM but uses the faster Yarn.",
   "bin": "./bin.js",
   "scripts": {
