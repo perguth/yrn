@@ -43,7 +43,7 @@ function prepareArgsAndCallYarn () {
     oldSymlinks = fs.existsSync(path) && fs.readdirSync(path)
   }
 
-  if (oldModules) execSync(`mv ${modulePath} ${root}/stash-node_modules'`)
+  if (oldModules) execSync(`mv ${modulePath} ${root}/stash-node_modules`)
 
   callYarn(yarnArgs, pkgNames, removePackages)
 
