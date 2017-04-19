@@ -11,16 +11,7 @@ npm install -g yrn
 
 > **In depth:**  It will remove the `yarn.lock` file as well as the added dependencies.It will restore the deleted files in`node_packages` and gets rid of `node_modules/.yarn-integrity`. Exception: previously existing `yarn` files will be kept.
 
-## Usage
-
-```bash
-yrn install --save-dev standard tape # uses `yarn` to install
-yrn uninstall --save-dev tape # uses `npm` to uninstall
-```
-
 ## CLI
-
-All calls to `yarn` cause it to create a `yarn.lock` and a `node_modules/.yarn-integrity`. We delete them automatically afterwards if they weren't there before.
 
 #### `yrn install`
 
