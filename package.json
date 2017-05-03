@@ -29,7 +29,7 @@
     "find-root": "^1.0.0",
     "jsonfile": "^2.4.0",
     "run-parallel": "^1.1.6",
-    "yargs": "^7.0.1"
+    "yargs": "^8.0.1"
   },
   "peerDependencies": {
     "yarn": "*"
